@@ -1,100 +1,74 @@
-# Inventory Stock Management
+Inventory Stock Management
 
-This is a small inventory project done for the .NET machine test.
+This is a .NET machine test project for product inventory and stock management.
 
-The project is made with ASP.NET Core Blazor and SQL Server. It has product creation, product listing, variants, stock purchase, and stock sale.
+The project is developed using ASP.NET Core Blazor, Entity Framework Core and SQL Server LocalDB.
 
-## Technologies Used
+Technologies used:
 
-- .NET 8
-- ASP.NET Core Blazor
-- Entity Framework Core
-- SQL Server LocalDB
-- Bootstrap
+.NET 8
+ASP.NET Core Blazor
+Entity Framework Core
+SQL Server LocalDB
+Bootstrap
 
-## How to Run
+How to run:
 
 1. Download or clone the project.
-2. Open `InventoryStockManagement.sln` in Visual Studio 2022.
-3. Restore NuGet packages if it is not restored automatically.
-4. Run the project with the `http` profile.
-5. The app will open in browser.
+2. Open InventoryStockManagement.sln in Visual Studio 2022.
+3. Restore NuGet packages if needed.
+4. Run the project using the http profile.
+5. Open the below URL in browser.
 
-Local URL:
-
-```text
 http://localhost:5148
-```
 
-## Database
+Database:
 
-I used SQL Server LocalDB for this project.
+Database name is InventoryStockManagementDb.
 
-Database name:
-
-```text
-InventoryStockManagementDb
-```
-
-The connection string is in `appsettings.json`.
-
-```json
-"InventoryConnection": "Server=(localdb)\\mssqllocaldb;Database=InventoryStockManagementDb;Trusted_Connection=True;MultipleActiveResultSets=true"
-```
+The connection string is available in appsettings.json.
 
 The database will be created automatically when the application starts.
 
-I have also added the SQL script here:
+SQL script is also added in this folder:
 
-```text
 DatabaseScripts/CreateDatabase.sql
-```
 
-## Main Pages
+Main pages:
 
-- `/` - Dashboard
-- `/products` - Product list
-- `/products/create` - Create product
-- `/stock` - Add or remove stock
+/ - Dashboard
+/products - Product list
+/products/create - Create product
+/stock - Add or remove stock
 
-## API Endpoints
+API endpoints:
 
-Product APIs are added in `Endpoints/ProductEndpoints.cs`.
-
-Main APIs:
-
-```text
 POST /api/products
 GET /api/products
 POST /api/products/stock/purchase
 POST /api/products/stock/sale
-```
 
-More API details are written in:
+API details are added in:
 
-```text
 Docs/API.md
-```
 
-## Folder Details
+Folder details:
 
-```text
-Models              - Entity classes
-Data                - DbContext
-Dtos                - Request and response models
-Services            - Business logic
-Endpoints           - API endpoints
-Components/Pages    - Blazor pages
-DatabaseScripts     - SQL script
-Docs                - API documentation
-```
+Models - Entity classes
+Data - DbContext
+Dtos - Request and response models
+Services - Business logic
+Endpoints - API endpoints
+Components/Pages - Blazor pages
+DatabaseScripts - SQL script
+Docs - API documentation
 
-## Notes
+Notes:
 
-- Product can have multiple variants like Size and Color.
-- Each variant can have multiple options.
-- Purchase will increase stock.
-- Sale will decrease stock.
-- Sale is not allowed if stock is not enough.
-- Product list has pagination and search.
+Product can have multiple variants like Size and Color.
+Each variant can have multiple options.
+Purchase will increase stock.
+Sale will decrease stock.
+Sale is not allowed if stock is not enough.
+Product list has pagination and search.
 
