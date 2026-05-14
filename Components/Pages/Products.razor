@@ -1,0 +1,116 @@
+@page "/products"
+@rendermode InteractiveServer
+@inject IProductService ProductService
+
+<PageTitle>Products</PageTitle>
+
+<div class="page-heading">
+    <div>
+        <h1>Products</h1>
+        <p>Product listing with pagination and current stock.</p>
+    </div>
+    <a class="btn btn-primary" href="products/create">Create Product</a>
+</div>
+
+<div class="toolbar">
+    <input class="form-control" placeholder="Search by name, code, or HSN" @bind="search" @bind:event="oninput" />
+    <button class="btn btn-outline-primary" @onclick="SearchAsync">Search</button>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (products is null)
+{
+    <p>Loading products...</p>
+}
+else if (products.Items.Count == 0)
+{
+    <div class="empty-state">No products found. Create your first product to begin.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>HSN</th>
+                    <th>Stock</th>
+                    <th>Variants</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in products.Items)
+                {
+                    <tr>
+                        <td>@product.ProductCode</td>
+                        <td>@product.ProductName</td>
+                        <td>@(product.HSNCode ?? "-")</td>
+                        <td>@product.TotalStock</td>
+                        <td>
+                            @foreach (var variant in product.Variants)
+                            {
+                                <span class="variant-chip">@variant.Name: @string.Join(", ", variant.Options)</span>
+                            }
+                        </td>
+                        <td>@(product.Active ? "Active" : "Inactive")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pager">
+        <button class="btn btn-outline-secondary" disabled="@(pageNumber == 1)" @onclick="PreviousPageAsync">Previous</button>
+        <span>Page @products.PageNumber of @Math.Max(1, products.TotalPages)</span>
+        <button class="btn btn-outline-secondary" disabled="@(pageNumber >= products.TotalPages)" @onclick="NextPageAsync">Next</button>
+    </div>
+}
+
+@code {
+    private PagedResult<ProductListItemResponse>? products;
+    private string? search;
+    private string? errorMessage;
+    private int pageNumber = 1;
+    private const int PageSize = 10;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            errorMessage = null;
+            products = await ProductService.ListAsync(pageNumber, PageSize, search);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task SearchAsync()
+    {
+        pageNumber = 1;
+        await LoadAsync();
+    }
+
+    private async Task PreviousPageAsync()
+    {
+        pageNumber--;
+        await LoadAsync();
+    }
+
+    private async Task NextPageAsync()
+    {
+        pageNumber++;
+        await LoadAsync();
+    }
+}

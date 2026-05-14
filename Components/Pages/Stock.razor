@@ -1,0 +1,121 @@
+@page "/stock"
+@rendermode InteractiveServer
+@inject IProductService ProductService
+
+<PageTitle>Stock</PageTitle>
+
+<h1>Stock Add / Remove</h1>
+
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (products is null)
+{
+    <p>Loading products...</p>
+}
+else
+{
+    <EditForm Model="form" OnValidSubmit="SubmitAsync" class="form-shell">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label">Product</label>
+                <InputSelect class="form-select" @bind-Value="form.ProductId">
+                    <option value="">Select product</option>
+                    @foreach (var product in products.Items)
+                    {
+                        <option value="@product.Id">@product.ProductCode - @product.ProductName (Stock: @product.TotalStock)</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Type</label>
+                <InputSelect class="form-select" @bind-Value="form.Type">
+                    <option value="Purchase">Purchase</option>
+                    <option value="Sale">Sale</option>
+                </InputSelect>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Quantity</label>
+                <InputNumber class="form-control" @bind-Value="form.Quantity" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Notes</label>
+                <InputText class="form-control" @bind-Value="form.Notes" />
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Stock Entry</button>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private PagedResult<ProductListItemResponse>? products;
+    private StockFormModel form = new();
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProductsAsync();
+    }
+
+    private async Task LoadProductsAsync()
+    {
+        products = await ProductService.ListAsync(1, 50, null);
+    }
+
+    private async Task SubmitAsync()
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var request = new StockRequest(form.ProductId, form.Quantity, form.Notes);
+
+            if (form.Type == "Purchase")
+            {
+                await ProductService.AddStockAsync(request);
+                successMessage = "Purchase stock added.";
+            }
+            else
+            {
+                await ProductService.RemoveStockAsync(request);
+                successMessage = "Sale stock removed.";
+            }
+
+            form = new StockFormModel();
+            await LoadProductsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private sealed class StockFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        public Guid ProductId { get; set; }
+
+        public string Type { get; set; } = "Purchase";
+
+        [System.ComponentModel.DataAnnotations.Range(typeof(decimal), "0.01", "999999999")]
+        public decimal Quantity { get; set; } = 1;
+
+        [System.ComponentModel.DataAnnotations.MaxLength(250)]
+        public string? Notes { get; set; }
+    }
+}

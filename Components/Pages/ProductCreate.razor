@@ -1,0 +1,151 @@
+@page "/products/create"
+@rendermode InteractiveServer
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+
+<PageTitle>Create Product</PageTitle>
+
+<h1>Create Product</h1>
+
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<EditForm Model="form" OnValidSubmit="SaveAsync" class="form-shell">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Product Name</label>
+            <InputText class="form-control" @bind-Value="form.Name" />
+            <ValidationMessage For="@(() => form.Name)" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Product Code</label>
+            <InputText class="form-control" @bind-Value="form.ProductCode" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">HSN Code</label>
+            <InputText class="form-control" @bind-Value="form.HSNCode" />
+        </div>
+        <div class="col-md-12">
+            <label class="check-line">
+                <InputCheckbox @bind-Value="form.IsFavourite" />
+                Favourite product
+            </label>
+        </div>
+    </div>
+
+    <div class="section-title">
+        <h2>Variants</h2>
+        <button type="button" class="btn btn-outline-primary" @onclick="AddVariant">Add Variant</button>
+    </div>
+
+    @for (var i = 0; i < form.Variants.Count; i++)
+    {
+        var variant = form.Variants[i];
+        <div class="variant-editor">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Variant Name</label>
+                    <InputText class="form-control" @bind-Value="variant.Name" placeholder="Size" />
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label">Options</label>
+                    <InputText class="form-control" @bind-Value="variant.OptionsText" placeholder="S, M, L" />
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-danger w-100" @onclick="() => RemoveVariant(variant)">X</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Product</button>
+        <a class="btn btn-outline-secondary" href="products">Cancel</a>
+    </div>
+</EditForm>
+
+@code {
+    private ProductFormModel form = new()
+    {
+        Variants =
+        [
+            new VariantFormModel { Name = "Size", OptionsText = "S, M, L" },
+            new VariantFormModel { Name = "Color", OptionsText = "Red, Blue, Black" }
+        ]
+    };
+
+    private string? errorMessage;
+    private string? successMessage;
+
+    private async Task SaveAsync()
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var request = new ProductCreateRequest(
+                form.Name,
+                form.ProductCode,
+                form.HSNCode,
+                form.IsFavourite,
+                null,
+                form.Variants.Select(variant => new ProductVariantRequest(
+                    variant.Name,
+                    variant.OptionsText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList()))
+                    .ToList());
+
+            await ProductService.CreateAsync(request);
+            successMessage = "Product created successfully.";
+            Navigation.NavigateTo("/products");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void AddVariant()
+    {
+        form.Variants.Add(new VariantFormModel());
+    }
+
+    private void RemoveVariant(VariantFormModel variant)
+    {
+        form.Variants.Remove(variant);
+    }
+
+    private sealed class ProductFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.MaxLength(200)]
+        public string Name { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.MaxLength(50)]
+        public string? ProductCode { get; set; }
+
+        [System.ComponentModel.DataAnnotations.MaxLength(100)]
+        public string? HSNCode { get; set; }
+
+        public bool IsFavourite { get; set; }
+
+        public List<VariantFormModel> Variants { get; set; } = [];
+    }
+
+    private sealed class VariantFormModel
+    {
+        public string Name { get; set; } = string.Empty;
+
+        public string OptionsText { get; set; } = string.Empty;
+    }
+}
