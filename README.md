@@ -1,61 +1,34 @@
-# Inventory & Stock Management System
+# Inventory Stock Management
 
-ASP.NET Core / Blazor machine test project for managing products, variants, sub-variants, purchase stock, and sale stock.
+This is a small inventory project done for the .NET machine test.
 
-## Technology Stack
+The project is made with ASP.NET Core Blazor and SQL Server. It has product creation, product listing, variants, stock purchase, and stock sale.
+
+## Technologies Used
 
 - .NET 8
-- ASP.NET Core Blazor Web App
-- ASP.NET Core Minimal APIs
-- Entity Framework Core 8
-- Microsoft SQL Server LocalDB
+- ASP.NET Core Blazor
+- Entity Framework Core
+- SQL Server LocalDB
 - Bootstrap
 
-## Features
+## How to Run
 
-- Create product with variants and options
-- Product listing with pagination and search
-- Add stock through purchase entry
-- Remove stock through sale entry
-- Prevent sale when stock is insufficient
-- SQL Server database integration
-- REST API endpoints
-- Server-side validation and error handling
-- Logging through ASP.NET Core logging
+1. Download or clone the project.
+2. Open `InventoryStockManagement.sln` in Visual Studio 2022.
+3. Restore NuGet packages if it is not restored automatically.
+4. Run the project with the `http` profile.
+5. The app will open in browser.
 
-## Project Structure
+Local URL:
 
 ```text
-InventoryStockManagement
-|-- Components/Pages
-|   |-- Home.razor
-|   |-- ProductCreate.razor
-|   |-- Products.razor
-|   |-- Stock.razor
-|-- Data
-|   |-- InventoryDbContext.cs
-|-- DatabaseScripts
-|   |-- CreateDatabase.sql
-|-- Docs
-|   |-- API.md
-|-- Dtos
-|   |-- ProductDtos.cs
-|-- Endpoints
-|   |-- ProductEndpoints.cs
-|-- Models
-|   |-- Product.cs
-|   |-- ProductVariant.cs
-|   |-- ProductVariantOption.cs
-|   |-- StockTransaction.cs
-|-- Services
-|   |-- ProductService.cs
-|-- Program.cs
-|-- appsettings.json
+http://localhost:5148
 ```
 
 ## Database
 
-The application uses SQL Server LocalDB by default.
+I used SQL Server LocalDB for this project.
 
 Database name:
 
@@ -63,66 +36,65 @@ Database name:
 InventoryStockManagementDb
 ```
 
-Connection string location:
-
-```text
-appsettings.json
-```
+The connection string is in `appsettings.json`.
 
 ```json
 "InventoryConnection": "Server=(localdb)\\mssqllocaldb;Database=InventoryStockManagementDb;Trusted_Connection=True;MultipleActiveResultSets=true"
 ```
 
-The database is created automatically when the app starts because `Program.cs` calls `Database.EnsureCreated()`.
+The database will be created automatically when the application starts.
 
-You can also manually create the database using:
+I have also added the SQL script here:
 
 ```text
 DatabaseScripts/CreateDatabase.sql
 ```
 
-## Setup Instructions
+## Main Pages
 
-1. Open `InventoryStockManagement.csproj` in Visual Studio 2022.
-2. Confirm .NET 8 SDK is installed.
-3. Restore NuGet packages if Visual Studio asks.
-4. Make sure SQL Server LocalDB is installed.
-5. Run the project using the `http` profile.
-6. Open:
+- `/` - Dashboard
+- `/products` - Product list
+- `/products/create` - Create product
+- `/stock` - Add or remove stock
+
+## API Endpoints
+
+Product APIs are added in `Endpoints/ProductEndpoints.cs`.
+
+Main APIs:
 
 ```text
-http://localhost:5148
+POST /api/products
+GET /api/products
+POST /api/products/stock/purchase
+POST /api/products/stock/sale
 ```
 
-## Running From Command Line
-
-```bash
-dotnet restore
-dotnet build
-dotnet run
-```
-
-## Main Screens
-
-- Dashboard: `/`
-- Product List: `/products`
-- Create Product: `/products/create`
-- Stock Add/Remove: `/stock`
-
-## API Documentation
-
-API details are available in:
+More API details are written in:
 
 ```text
 Docs/API.md
 ```
 
-## Submission Contents
+## Folder Details
 
-This folder contains:
+```text
+Models              - Entity classes
+Data                - DbContext
+Dtos                - Request and response models
+Services            - Business logic
+Endpoints           - API endpoints
+Components/Pages    - Blazor pages
+DatabaseScripts     - SQL script
+Docs                - API documentation
+```
 
-- Complete source code
-- SQL database script
-- README setup instructions
-- API documentation
+## Notes
+
+- Product can have multiple variants like Size and Color.
+- Each variant can have multiple options.
+- Purchase will increase stock.
+- Sale will decrease stock.
+- Sale is not allowed if stock is not enough.
+- Product list has pagination and search.
 
